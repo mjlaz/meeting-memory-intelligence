@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meeting Memory Intelligence | IBM watsonx</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <style>
+    :root {
+      --cds-background: #161616;
+      --cds-layer-01: #262626;
+      --cds-layer-02: #393939;
+      --cds-layer-03: #525252;
+      --cds-text-primary: #f4f4f4;
+      --cds-text-secondary: #c6c6c6;
+      --cds-text-placeholder: #6f6f6f;
+      --cds-interactive: #4589ff;
+      --cds-interactive-hover: #0f62fe;
+      --cds-border-subtle: #393939;
+      --cds-support-success: #42be65;
+      --cds-support-warning: #f1c21b;
+      --cds-support-info: #4589ff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--cds-background);
+      color: var(--cds-text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      background: var(--cds-layer-01);
+      border-bottom: 1px solid var(--cds-border-subtle);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+    .header-content {
+      max-width: 1584px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--cds-text-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 2px 8px rgba(69, 137, 255, 0.3);
+    }
+    .nav {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      color: var(--cds-text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      background: var(--cds-layer-02);
+      color: var(--cds-text-primary);
+    }
+    .hero {
+      background: linear-gradient(135deg, #161616 0%, #1a1f2e 50%, #161616 100%);
+      padding: 6rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 20% 50%, rgba(69, 137, 255, 0.1) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 50%, rgba(15, 98, 254, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(69, 137, 255, 0.1);
+      border: 1px solid rgba(69, 137, 255, 0.3);
+      border-radius: 24px;
+      font-size: 0.875rem;
+      color: var(--cds-interactive);
+      margin-bottom: 2rem;
+    }
+    .hero h1 {
+      font-size: 4rem;
+      font-weight: 300;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #c6c6c6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-description {
+      font-size: 1.5rem;
+      line-height: 1.5;
+      color: var(--cds-text-secondary);
+      margin-bottom: 3rem;
+      max-width: 800px;
+    }
+    .cta-buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-family: 'IBM Plex Sans';
+      font-weight: 500;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(69, 137, 255, 0.4);
+    }
+    .btn-secondary {
+      background: var(--cds-layer-02);
+      color: var(--cds-text-primary);
+      border: 1px solid var(--cds-border-subtle);
+    }
+    .btn-secondary:hover {
+      background: var(--cds-layer-03);
+      transform: translateY(-2px);
+    }
+    .section {
+      padding: 6rem 2rem;
+      border-top: 1px solid var(--cds-border-subtle);
+    }
+    .section-content {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-header {
+      text-align: center;
+      margin-bottom: 4rem;
+    }
+    .section-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: rgba(69, 137, 255, 0.1);
+      border-radius: 24px;
+      font-size: 0.875rem;
+      color: var(--cds-interactive);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .section-title {
+      font-size: 3rem;
+      font-weight: 300;
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+    }
+    .section-description {
+      font-size: 1.25rem;
+      color: var(--cds-text-secondary);
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+    .card {
+      background: var(--cds-layer-01);
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 8px;
+      padding: 2rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #4589ff 0%, #0f62fe 100%);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      border-color: rgba(69, 137, 255, 0.3);
+    }
+    .card:hover::before {
+      transform: scaleX(1);
+    }
+    .card-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, rgba(69, 137, 255, 0.2) 0%, rgba(15, 98, 254, 0.2) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+    }
+    .card-description {
+      font-size: 1rem;
+      line-height: 1.6;
+      color: var(--cds-text-secondary);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem;
+      margin-top: 4rem;
+    }
+    .stat-card {
+      text-align: center;
+      padding: 2rem;
+      background: var(--cds-layer-01);
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 8px;
+    }
+    .stat-value {
+      font-size: 3.5rem;
+      font-weight: 300;
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    .stat-label {
+      font-size: 1rem;
+      color: var(--cds-text-secondary);
+    }
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .tech-card {
+      background: var(--cds-layer-01);
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s;
+    }
+    .tech-card:hover {
+      border-color: var(--cds-interactive);
+      transform: translateX(4px);
+    }
+    .tech-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, rgba(69, 137, 255, 0.2) 0%, rgba(15, 98, 254, 0.2) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .tech-name {
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--cds-text-primary);
+    }
+    .cta-section {
+      background: linear-gradient(135deg, #1a1f2e 0%, #161616 100%);
+      padding: 6rem 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(69, 137, 255, 0.1) 0%, transparent 70%);
+    }
+    .cta-content {
+      max-width: 800px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .cta-title {
+      font-size: 3rem;
+      font-weight: 300;
+      margin-bottom: 1.5rem;
+    }
+    .cta-description {
+      font-size: 1.25rem;
+      color: var(--cds-text-secondary);
+      margin-bottom: 2.5rem;
+    }
+    .footer {
+      background: var(--cds-layer-01);
+      border-top: 1px solid var(--cds-border-subtle);
+      padding: 3rem 2rem;
+    }
+    .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+    }
+    .footer-section h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+    }
+    .footer-links {
+      list-style: none;
+    }
+    .footer-links li {
+      margin-bottom: 0.75rem;
+    }
+    .footer-links a {
+      color: var(--cds-text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--cds-interactive);
+    }
+    .footer-bottom {
+      max-width: 1200px;
+      margin: 2rem auto 0;
+      padding-top: 2rem;
+      border-top: 1px solid var(--cds-border-subtle);
+      text-align: center;
+      font-size: 0.875rem;
+      color: var(--cds-text-secondary);
+    }
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 2.5rem; }
+      .section-title { font-size: 2rem; }
+      .grid { grid-template-columns: 1fr; }
+      .nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">M</div>
+        <span>Meeting Memory Intelligence</span>
+      </a>
+      <nav class="nav">
+        <a href="#features" class="nav-link">Features</a>
+        <a href="#technology" class="nav-link">Technology</a>
+        <a href="dashboard.html" class="nav-link">Launch App</a>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span>🚀</span>
+        <span>Powered by IBM watsonx.ai</span>
+      </div>
+      <h1>Transform meeting chaos into actionable intelligence</h1>
+      <p class="hero-description">
+        Automatically extract action items, decisions, and risks from meeting artifacts using enterprise-grade AI. Built on IBM Cloud with production-ready security.
+      </p>
+      <div class="cta-buttons">
+        <a href="dashboard.html" class="btn btn-primary">
+          <span>Get Started</span>
+          <span>→</span>
+        </a>
+        <a href="#features" class="btn btn-secondary">
+          <span>Learn More</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="section-content">
+      <div class="section-header">
+        <div class="section-badge">Features</div>
+        <h2 class="section-title">Powerful AI-driven capabilities</h2>
+        <p class="section-description">
+          Everything you need to transform unstructured meeting data into structured, actionable insights
+        </p>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="card-icon">🎤</div>
+          <h3 class="card-title">Smart Transcription</h3>
+          <p class="card-description">
+            IBM Watson Speech to Text with speaker identification, timestamps, and support for 10 languages. Process audio in multiple formats with high accuracy.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🤖</div>
+          <h3 class="card-title">AI Extraction</h3>
+          <p class="card-description">
+            Granite 3 8B model automatically identifies action items, decisions, and risks with confidence scores. Specialized prompts for different meeting types.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📊</div>
+          <h3 class="card-title">Analytics Dashboard</h3>
+          <p class="card-description">
+            Cross-meeting insights, owner workload analysis, risk tracking, and trend detection. Visualize patterns across your organization.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📄</div>
+          <h3 class="card-title">Document Generation</h3>
+          <p class="card-description">
+            Automated meeting minutes, action reports, and executive summaries. Export in multiple formats for seamless integration.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">☁️</div>
+          <h3 class="card-title">Cloud Storage</h3>
+          <p class="card-description">
+            Secure artifact storage with IBM Cloud Object Storage. Automatic backup, versioning, and enterprise-grade encryption.
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔒</div>
+          <h3 class="card-title">Enterprise Security</h3>
+          <p class="card-description">
+            Production-grade security with rate limiting, CORS, security headers, and input sanitization. SOC 2 compliant infrastructure.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-content">
+      <div class="section-header">
+        <div class="section-badge">Performance</div>
+        <h2 class="section-title">Built for scale</h2>
+        <p class="section-description">
+          Enterprise-grade performance with proven reliability
+        </p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value"><10s</div>
+          <div class="stat-label">Processing Time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">10</div>
+          <div class="stat-label">Languages</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">50+</div>
+          <div class="stat-label">API Endpoints</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">95.8%</div>
+          <div class="stat-label">Test Pass Rate</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">80%+</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">24/7</div>
+          <div class="stat-label">Availability</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="technology">
+    <div class="section-content">
+      <div class="section-header">
+        <div class="section-badge">Technology</div>
+        <h2 class="section-title">Built with IBM's cutting-edge AI</h2>
+        <p class="section-description">
+          Leveraging the full power of IBM Cloud and watsonx.ai
+        </p>
+      </div>
+
+      <div class="tech-grid">
+        <div class="tech-card">
+          <div class="tech-icon">🧠</div>
+          <div class="tech-name">IBM watsonx.ai</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🎙️</div>
+          <div class="tech-name">Watson Speech to Text</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">☁️</div>
+          <div class="tech-name">IBM Cloud Object Storage</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">⚡</div>
+          <div class="tech-name">IBM Cloud Code Engine</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">💎</div>
+          <div class="tech-name">Granite 3 8B Instruct</div>
+        </div>
+        <div class="tech-card">
+          <div class="tech-icon">🔧</div>
+          <div class="tech-name">Node.js & TypeScript</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2 class="cta-title">Ready to transform your meetings?</h2>
+      <p class="cta-description">
+        Start using Meeting Memory Intelligence Engine today. No credit card required.
+      </p>
+      <div class="cta-buttons">
+        <a href="dashboard.html" class="btn btn-primary" style="font-size: 1.125rem; padding: 1.25rem 2.5rem;">
+          <span>Launch Application</span>
+          <span>→</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>Product</h4>
+        <ul class="footer-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#technology">Technology</a></li>
+          <li><a href="dashboard.html">Launch App</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Documentation</h4>
+        <ul class="footer-links">
+          <li><a href="/ARCHITECTURE.md">Architecture</a></li>
+          <li><a href="/API_DOCUMENTATION.md">API Reference</a></li>
+          <li><a href="/SETUP_GUIDE.md">Setup Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Resources</h4>
+        <ul class="footer-links">
+          <li><a href="https://www.ibm.com/watsonx">IBM watsonx.ai</a></li>
+          <li><a href="https://cloud.ibm.com">IBM Cloud</a></li>
+          <li><a href="https://github.com">GitHub</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Legal</h4>
+        <ul class="footer-links">
+          <li><a href="/LICENSE">License (MIT)</a></li>
+          <li><a href="/SECURITY.md">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Meeting Memory Intelligence Engine. Built with IBM watsonx.ai for the IBM watsonx Challenge.</p>
+    </div>
+  </footer>
+
+  <script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+</body>
+</html>

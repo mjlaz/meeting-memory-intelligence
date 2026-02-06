@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Meeting Memory Intelligence | IBM watsonx</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --cds-background: #161616;
+      --cds-layer-01: #262626;
+      --cds-layer-02: #393939;
+      --cds-layer-03: #525252;
+      --cds-text-primary: #f4f4f4;
+      --cds-text-secondary: #c6c6c6;
+      --cds-text-placeholder: #6f6f6f;
+      --cds-interactive: #4589ff;
+      --cds-border-subtle: #393939;
+      --cds-support-success: #42be65;
+      --cds-support-warning: #f1c21b;
+      --cds-support-error: #ff8389;
+      --cds-support-info: #4589ff;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'IBM Plex Sans', sans-serif;
+      background: var(--cds-background);
+      color: var(--cds-text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      background: var(--cds-layer-01);
+      border-bottom: 1px solid var(--cds-border-subtle);
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .header-content {
+      max-width: 1584px;
+      width: 100%;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--cds-text-primary);
+      font-size: 0.875rem;
+      font-weight: 600;
+    }
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 2px 8px rgba(69, 137, 255, 0.3);
+    }
+    .nav {
+      margin-left: auto;
+      display: flex;
+      gap: 0;
+    }
+    .nav-link {
+      color: var(--cds-text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      padding: 0 1rem;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      background: var(--cds-layer-02);
+      color: var(--cds-text-primary);
+    }
+    .nav-link.active {
+      border-bottom-color: var(--cds-interactive);
+      color: var(--cds-text-primary);
+    }
+    .content {
+      max-width: 1584px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+    .page-header {
+      margin-bottom: 3rem;
+    }
+    .page-header h1 {
+      font-size: 2.5rem;
+      font-weight: 300;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #c6c6c6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-header p {
+      font-size: 1.125rem;
+      color: var(--cds-text-secondary);
+    }
+    .tabs {
+      border-bottom: 1px solid var(--cds-border-subtle);
+      margin-bottom: 3rem;
+      display: flex;
+    }
+    .tab {
+      background: transparent;
+      border: none;
+      color: var(--cds-text-secondary);
+      font-size: 0.875rem;
+      font-family: 'IBM Plex Sans';
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .tab:hover {
+      color: var(--cds-text-primary);
+      background: var(--cds-layer-02);
+    }
+    .tab.active {
+      color: var(--cds-text-primary);
+      border-bottom-color: var(--cds-interactive);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    .tile {
+      background: var(--cds-layer-01);
+      padding: 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .tile::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #4589ff 0%, #0f62fe 100%);
+    }
+    .tile-title {
+      font-size: 1.5rem;
+      font-weight: 400;
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+    }
+    .tile-description {
+      font-size: 1rem;
+      color: var(--cds-text-secondary);
+      margin-bottom: 2rem;
+      line-height: 1.6;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .label {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--cds-text-secondary);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .textarea {
+      width: 100%;
+      background: var(--cds-layer-02);
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 4px;
+      color: var(--cds-text-primary);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.875rem;
+      padding: 1rem;
+      min-height: 200px;
+      resize: vertical;
+      transition: all 0.2s;
+    }
+    .textarea:focus {
+      outline: 2px solid var(--cds-interactive);
+      outline-offset: -2px;
+      border-color: var(--cds-interactive);
+    }
+    .select {
+      width: 100%;
+      background: var(--cds-layer-02);
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 4px;
+      color: var(--cds-text-primary);
+      font-family: 'IBM Plex Sans';
+      font-size: 0.875rem;
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .select:focus {
+      outline: 2px solid var(--cds-interactive);
+      outline-offset: -2px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      font-size: 0.875rem;
+      font-family: 'IBM Plex Sans';
+      font-weight: 500;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      color: white;
+      box-shadow: 0 2px 8px rgba(69, 137, 255, 0.2);
+    }
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(69, 137, 255, 0.4);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: var(--cds-layer-02);
+      color: var(--cds-text-primary);
+      border: 1px solid var(--cds-border-subtle);
+    }
+    .btn-secondary:hover {
+      background: var(--cds-layer-03);
+    }
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .notification {
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid;
+      border-radius: 4px;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .notification-success {
+      background: rgba(66, 190, 101, 0.1);
+      border-color: var(--cds-support-success);
+    }
+    .notification-error {
+      background: rgba(255, 131, 137, 0.1);
+      border-color: var(--cds-support-error);
+    }
+    .notification-info {
+      background: rgba(69, 137, 255, 0.1);
+      border-color: var(--cds-support-info);
+    }
+    .notification-icon {
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid white;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .results-grid {
+      display: grid;
+      gap: 2rem;
+    }
+    .result-section {
+      background: var(--cds-layer-02);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--cds-border-subtle);
+    }
+    .result-section h3 {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--cds-text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .result-item {
+      background: var(--cds-layer-01);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      border-radius: 4px;
+      border-left: 3px solid var(--cds-interactive);
+    }
+    .result-item:last-child {
+      margin-bottom: 0;
+    }
+    .result-label {
+      font-size: 0.75rem;
+      color: var(--cds-text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+    .result-value {
+      font-size: 1rem;
+      color: var(--cds-text-primary);
+      margin-bottom: 0.5rem;
+    }
+    .result-meta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      font-size: 0.875rem;
+      color: var(--cds-text-secondary);
+    }
+    .tag {
+      display: inline-flex;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .tag-success {
+      background: rgba(66, 190, 101, 0.2);
+      color: var(--cds-support-success);
+    }
+    .tag-warning {
+      background: rgba(241, 194, 27, 0.2);
+      color: var(--cds-support-warning);
+    }
+    .tag-error {
+      background: rgba(255, 131, 137, 0.2);
+      color: var(--cds-support-error);
+    }
+    .tag-info {
+      background: rgba(69, 137, 255, 0.2);
+      color: var(--cds-support-info);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--cds-layer-01);
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--cds-border-subtle);
+      border-left: 3px solid var(--cds-interactive);
+      transition: all 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 300;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #4589ff 0%, #0f62fe 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--cds-text-secondary);
+    }
+    .chart-container {
+      background: var(--cds-layer-01);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid var(--cds-border-subtle);
+      border-radius: 8px;
+    }
+    .chart-title {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      color: var(--cds-text-primary);
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--cds-layer-01);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .data-table thead {
+      background: var(--cds-layer-02);
+    }
+    .data-table th {
+      text-align: left;
+      padding: 1rem;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--cds-text-primary);
+      border-bottom: 1px solid var(--cds-border-subtle);
+    }
+    .data-table td {
+      padding: 1rem;
+      font-size: 0.875rem;
+      color: var(--cds-text-secondary);
+      border-bottom: 1px solid var(--cds-border-subtle);
+    }
+    .data-table tbody tr:hover {
+      background: var(--cds-layer-02);
+    }
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--cds-text-placeholder);
+    }
+    .empty-state-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+    .hidden {
+      display: none !important;
+    }
+    @media (max-width: 768px) {
+      .nav { display: none; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .btn-group { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-content">
+      <a href="/" class="logo">
+        <div class="logo-icon">M</div>
+        <span>Meeting Memory Intelligence</span>
+      </a>
+      <nav class="nav">
+        <a href="#" class="nav-link active">Dashboard</a>
+        <a href="index.html" class="nav-link">About</a>
+        <a href="/API_DOCUMENTATION.md" class="nav-link">API Docs</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content">
+    <div class="page-header">
+      <h1>Meeting Intelligence Dashboard</h1>
+      <p>Extract actionable insights from meeting transcripts using IBM watsonx.ai</p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="process">Process Meeting</button>
+      <button class="tab" data-tab="insights">Insights</button>
+      <button class="tab" data-tab="meetings">History</button>
+      <button class="tab" data-tab="export">Export</button>
+    </div>
+
+    <!-- Process Tab -->
+    <div id="process-tab" class="tab-content active">
+      <div class="tile">
+        <h2 class="tile-title">Process Meeting Transcript</h2>
+        <p class="tile-description">
+          Paste your meeting transcript below and let IBM watsonx.ai extract action items, decisions, and risks automatically.
+        </p>
+
+        <div class="form-group">
+          <label class="label">Meeting Transcript *</label>
+          <textarea 
+            id="transcriptText" 
+            class="textarea" 
+            placeholder="Example:
+
+Team Standup - January 15, 2026
+
+John: I'll finish the API documentation by Friday.
+Sarah: We decided to use PostgreSQL for the production database.
+Mike: There's a risk that the deployment might be delayed due to infrastructure issues.
+Lisa: I'm working on the frontend components and should have them ready by Wednesday.
+
+Paste your meeting transcript here..."
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Meeting Type</label>
+          <select id="meetingType" class="select">
+            <option value="general">General Meeting</option>
+            <option value="standup">Daily Standup</option>
+            <option value="planning">Sprint Planning</option>
+            <option value="retrospective">Retrospective</option>
+            <option value="client">Client Meeting</option>
+          </select>
+        </div>
+
+        <div class="btn-group">
+          <button id="processBtn" class="btn btn-primary">
+            <span>🤖</span>
+            <span>Process with watsonx.ai</span>
+          </button>
+          <button id="clearBtn" class="btn btn-secondary">Clear</button>
+        </div>
+
+        <div id="processStatus" class="hidden"></div>
+      </div>
+
+      <div id="resultsSection" class="hidden">
+        <div class="stats-grid" id="resultsStats"></div>
+        <div class="results-grid" id="resultsContent"></div>
+      </div>
+    </div>
+
+    <!-- Insights Tab -->
+    <div id="insights-tab" class="tab-content">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value" id="totalMeetings">0</div>
+          <div class="stat-label">Total Meetings</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalActions">0</div>
+          <div class="stat-label">Action Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalDecisions">0</div>
+          <div class="stat-label">Decisions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalRisks">0</div>
+          <div class="stat-label">Risks</div>
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <h3 class="chart-title">Action Items by Owner</h3>
+        <canvas id="ownerChart" height="80"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <h3 class="chart-title">Risk Severity Distribution</h3>
+        <canvas id="riskChart" height="80"></canvas>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="meetings-tab" class="tab-content">
+      <div class="tile">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h2 class="tile-title" style="margin: 0;">Meeting History</h2>
+          <button id="refreshMeetings" class="btn btn-secondary">Refresh</button>
+        </div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Actions</th>
+              <th>Decisions</th>
+              <th>Risks</th>
+            </tr>
+          </thead>
+          <tbody id="meetingsTableBody">
+            <tr>
+              <td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-state-icon">📋</div>
+                  <p>No meetings processed yet. Start by processing a transcript above.</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Export Tab -->
+    <div id="export-tab" class="tab-content">
+      <div class="tile">
+        <h2 class="tile-title">Export Data</h2>
+        <p class="tile-description">
+          Export your meeting data in various formats for integration with other tools and systems.
+        </p>
+        <div class="btn-group">
+          <button id="exportActionsCSV" class="btn btn-primary">
+            <span>📊</span>
+            <span>Export Actions (CSV)</span>
+          </button>
+          <button id="exportDecisionsCSV" class="btn btn-primary">
+            <span>📊</span>
+            <span>Export Decisions (CSV)</span>
+          </button>
+          <button id="exportRisksCSV" class="btn btn-primary">
+            <span>📊</span>
+            <span>Export Risks (CSV)</span>
+          </button>
+          <button id="exportAllJSON" class="btn btn-secondary">
+            <span>📦</span>
+            <span>Export All (JSON)</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.dataset.tab;
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(`${tabName}-tab`).classList.add('active');
+        if (tabName === 'insights') loadInsights();
+        if (tabName === 'meetings') loadMeetings();
+      });
+    });
+
+    // Process transcript
+    const processBtn = document.getElementById('processBtn');
+    const transcriptText = document.getElementById('transcriptText');
+    const meetingType = document.getElementById('meetingType');
+
+    processBtn.addEventListener('click', async () => {
+      const transcript = transcriptText.value.trim();
+      if (!transcript) {
+        showStatus('error', 'Please enter a meeting transcript');
+        return;
+      }
+
+      processBtn.disabled = true;
+      showStatus('info', 'Processing with IBM watsonx.ai...', true);
+
+      try {
+        const response = await fetch(`${API_BASE}/process`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            transcriptText: transcript, 
+            meetingType: meetingType.value 
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showStatus('success', 'Processing complete! Results displayed below.');
+          // API returns data in 'facts' object
+          displayResults(data.facts || data);
+        } else {
+          showStatus('error', data.error || 'Processing failed. Please try again.');
+        }
+      } catch (error) {
+        showStatus('error', 'Network error: ' + error.message);
+      } finally {
+        processBtn.disabled = false;
+      }
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      transcriptText.value = '';
+      document.getElementById('resultsSection').classList.add('hidden');
+      document.getElementById('processStatus').classList.add('hidden');
+    });
+
+    function showStatus(type, message, loading = false) {
+      const statusEl = document.getElementById('processStatus');
+      const iconMap = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+      };
+
+      statusEl.className = `notification notification-${type}`;
+      statusEl.innerHTML = `
+        <div class="notification-icon">${loading ? '<div class="loading"></div>' : iconMap[type]}</div>
+        <div>${message}</div>
+      `;
+      statusEl.classList.remove('hidden');
+    }
+
+    function displayResults(data) {
+      const resultsSection = document.getElementById('resultsSection');
+      const resultsStats = document.getElementById('resultsStats');
+      const resultsContent = document.getElementById('resultsContent');
+
+      const actions = data.actions || [];
+      const decisions = data.decisions || [];
+      const risks = data.risks || [];
+
+      // Stats
+      resultsStats.innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${actions.length}</div>
+          <div class="stat-label">Action Items</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${decisions.length}</div>
+          <div class="stat-label">Decisions</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${risks.length}</div>
+          <div class="stat-label">Risks</div>
+        </div>
+      `;
+
+      // Results
+      let html = '';
+
+      if (actions.length > 0) {
+        html += `
+          <div class="result-section">
+            <h3>✅ Action Items</h3>
+            ${actions.map(a => `
+              <div class="result-item">
+                <div class="result-label">Action</div>
+                <div class="result-value">${a.description}</div>
+                <div class="result-meta">
+                  <span><strong>Owner:</strong> ${a.owner || 'Unassigned'}</span>
+                  <span><strong>Due:</strong> ${a.dueDate || 'Not set'}</span>
+                  <span class="tag tag-info">${Math.round(a.confidence * 100)}% confidence</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      if (decisions.length > 0) {
+        html += `
+          <div class="result-section">
+            <h3>💡 Decisions</h3>
+            ${decisions.map(d => `
+              <div class="result-item">
+                <div class="result-label">Decision</div>
+                <div class="result-value">${d.decision}</div>
+                <div class="result-meta">
+                  <span><strong>Rationale:</strong> ${d.rationale || 'Not specified'}</span>
+                  <span class="tag tag-${d.impact === 'high' ? 'error' : d.impact === 'medium' ? 'warning' : 'success'}">${d.impact || 'low'} impact</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      if (risks.length > 0) {
+        html += `
+          <div class="result-section">
+            <h3>⚠️ Risks</h3>
+            ${risks.map(r => `
+              <div class="result-item">
+                <div class="result-label">Risk</div>
+                <div class="result-value">${r.risk}</div>
+                <div class="result-meta">
+                  <span><strong>Mitigation:</strong> ${r.mitigation || 'Not specified'}</span>
+                  <span class="tag tag-${r.severity === 'high' ? 'error' : r.severity === 'medium' ? 'warning' : 'success'}">${r.severity || 'low'} severity</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+
+      if (!actions.length && !decisions.length && !risks.length) {
+        html = '<div class="empty-state"><div class="empty-state-icon">🤔</div><p>No items extracted. Try a different transcript or meeting type.</p></div>';
+      }
+
+      resultsContent.innerHTML = html;
+      resultsSection.classList.remove('hidden');
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Insights
+    async function loadInsights() {
+      try {
+        const response = await fetch(`${API_BASE}/insights/summary`);
+        const data = await response.json();
+        document.getElementById('totalMeetings').textContent = data.totalMeetings || 0;
+        document.getElementById('totalActions').textContent = data.totalActions || 0;
+        document.getElementById('totalDecisions').textContent = data.totalDecisions || 0;
+        document.getElementById('totalRisks').textContent = data.totalRisks || 0;
+        loadCharts();
+      } catch (error) {
+        console.error('Failed to load insights:', error);
+      }
+    }
+
+    async function loadCharts() {
+      try {
+        const [ownersRes, risksRes] = await Promise.all([
+          fetch(`${API_BASE}/insights/owners`),
+          fetch(`${API_BASE}/insights/risks`)
+        ]);
+        const ownersData = await ownersRes.json();
+        const risksData = await risksRes.json();
+
+        new Chart(document.getElementById('ownerChart'), {
+          type: 'bar',
+          data: {
+            labels: ownersData.owners?.map(o => o.owner) || [],
+            datasets: [{
+              label: 'Action Items',
+              data: ownersData.owners?.map(o => o.count) || [],
+              backgroundColor: '#4589ff'
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true } }
+          }
+        });
+
+        const severityCounts = { high: 0, medium: 0, low: 0 };
+        risksData.risks?.forEach(r => severityCounts[r.severity] = (severityCounts[r.severity] || 0) + 1);
+
+        new Chart(document.getElementById('riskChart'), {
+          type: 'doughnut',
+          data: {
+            labels: ['High', 'Medium', 'Low'],
+            datasets: [{
+              data: [severityCounts.high, severityCounts.medium, severityCounts.low],
+              backgroundColor: ['#ff8389', '#f1c21b', '#42be65']
+            }]
+          },
+          options: { responsive: true }
+        });
+      } catch (error) {
+        console.error('Failed to load charts:', error);
+      }
+    }
+
+    // Meetings
+    async function loadMeetings() {
+      try {
+        const response = await fetch(`${API_BASE}/meetings`);
+        const data = await response.json();
+        const tbody = document.getElementById('meetingsTableBody');
+
+        if (data.meetings && data.meetings.length > 0) {
+          tbody.innerHTML = data.meetings.map(m => `
+            <tr>
+              <td>${new Date(m.date).toLocaleDateString()}</td>
+              <td><span class="tag tag-info">${m.type || 'general'}</span></td>
+              <td>${m.actionCount || 0}</td>
+              <td>${m.decisionCount || 0}</td>
+              <td>${m.riskCount || 0}</td>
+            </tr>
+          `).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="empty-state-icon">📋</div><p>No meetings found</p></div></td></tr>';
+        }
+      } catch (error) {
+        console.error('Failed to load meetings:', error);
+      }
+    }
+
+    document.getElementById('refreshMeetings').addEventListener('click', loadMeetings);
+
+    // Export
+    document.getElementById('exportActionsCSV').addEventListener('click', () => window.location.href = `${API_BASE}/export/csv/actions`);
+    document.getElementById('exportDecisionsCSV').addEventListener('click', () => window.location.href = `${API_BASE}/export/csv/decisions`);
+    document.getElementById('exportRisksCSV').addEventListener('click', () => window.location.href = `${API_BASE}/export/csv/risks`);
+    document.getElementById('exportAllJSON').addEventListener('click', () => window.location.href = `${API_BASE}/export/json/facts`);
+  </script>
+</body>
+</html>
